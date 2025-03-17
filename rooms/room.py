@@ -3,13 +3,14 @@ from entities.wall import Wall
 from entities.enemy import Enemy
 
 class Room:
-    def __init__(self, canvas, room_id, neighbors):
+    def __init__(self, canvas, room_id, neighbors, enemies = None):
         self.canvas = canvas
         self.room_id = room_id
         self.neighbors = neighbors
         self.doors = []
         self.walls = []
-        self.enemies = []  # Обязательно создаём пустой список врагов!
+        self.enemies = []
+        self.enemy_positions = enemies if enemies else []  # Сохраняем позиции врагов
 
     def generate_walls(self):
         """Создаёт стены по краям (кроме мест для дверей)"""
@@ -22,25 +23,18 @@ class Room:
 
     def generate_doors(self):
         """Создаёт двери, если есть соединение с соседней комнатой"""
+        door_width = 40  # Увеличиваем ширину двери
+        door_height = 40  # Увеличиваем высоту двери
+
         if "up" in self.neighbors and self.neighbors["up"] is not None:
-            self.doors.append(Door(self.canvas, 290, 50, 310, 70, self.neighbors["up"]))  # Верхняя дверь
+            self.doors.append(Door(self.canvas, 280, 40, 320, 80, self.neighbors["up"]))  # Верхняя дверь
         if "down" in self.neighbors and self.neighbors["down"] is not None:
-            self.doors.append(Door(self.canvas, 290, 530, 310, 550, self.neighbors["down"]))  # Нижняя дверь
+            self.doors.append(Door(self.canvas, 280, 520, 320, 560, self.neighbors["down"]))  # Нижняя дверь
         if "left" in self.neighbors and self.neighbors["left"] is not None:
-            self.doors.append(Door(self.canvas, 50, 290, 70, 310, self.neighbors["left"]))  # Левая дверь
+            self.doors.append(Door(self.canvas, 40, 280, 80, 320, self.neighbors["left"]))  # Левая дверь
         if "right" in self.neighbors and self.neighbors["right"] is not None:
-            self.doors.append(Door(self.canvas, 530, 290, 550, 310, self.neighbors["right"]))  # Правая дверь
+            self.doors.append(Door(self.canvas, 520, 280, 560, 320, self.neighbors["right"]))  # Правая дверь
 
     def spawn_enemies(self):
-        """Создаёт врагов в комнате (можно задавать вручную)"""
-        if self.room_id == 1:
-            self.enemies = [
-                Enemy(self.canvas, 400, 300)
-            ]
-        elif self.room_id == 2:
-            self.enemies = [
-                Enemy(self.canvas, 300, 200),
-                Enemy(self.canvas, 300, 400)
-            ]
-        else:
-            self.enemies = []
+        """Создаёт объекты врагов на основе заранее заданных координат"""
+        self.enemies = [Enemy(self.canvas, x, y) for x, y in self.enemy_positions]
