@@ -13,7 +13,12 @@ class Door:
     def check_transition(self, player_coords):
         """Проверяет, зашёл ли игрок в дверь"""
         door_coords = self.canvas.coords(self.rect)
+
+        if len(door_coords) < 4:  # Если координаты двери отсутствуют, пропускаем
+            return None
+
         if (player_coords[2] > door_coords[0] and player_coords[0] < door_coords[2] and
-            player_coords[3] > door_coords[1] and player_coords[1] < door_coords[3]):
+                player_coords[3] > door_coords[1] and player_coords[1] < door_coords[3]):
             return self.target_room
+
         return None
