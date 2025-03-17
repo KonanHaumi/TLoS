@@ -1,14 +1,13 @@
 import random
 from entities.bullet import Bullet
 
-
-
 class Enemy:
     def __init__(self, canvas, x, y):
         self.canvas = canvas
         self.rect = canvas.create_rectangle(x - 10, y - 10, x + 10, y + 10, fill="red")  # Враг — красный круг
         self.dx = random.choice([-3, 3])  # Начальная скорость по X
         self.dy = random.choice([-3, 3])  # Начальная скорость по Y
+        self.health = 100
         self.move_enemy()
         self.shoot()
 

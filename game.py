@@ -83,9 +83,12 @@ class Game:
         )
 
     def key_press(self, event):
+        """Обрабатывает нажатие клавиш"""
         key = event.keysym.lower()
-        if key in ("w", "a", "s", "d"):  # Обрабатываем нажатие W, A, S, D
-            self.player.keys_pressed.add(key)
+        if key in ("w", "a", "s", "d"):
+            self.player.keys_pressed.add(key)  # Движение
+        elif key in ("up", "down", "left", "right"):
+            self.player.attack(key, self.check_attack_collision)  # Атака мечом
 
     def key_release(self, event):
         key = event.keysym.lower()
@@ -199,6 +202,26 @@ class Game:
 
                 if self.player.health <= 0:
                     self.game_over()
+
+    def check_attack_collision(self, ax1, ay1, ax2, ay2):
+        """Проверяет попадание удара меча в врагов"""
+        for enemy in self.current_room.enemies[:]:  # Копируем список, чтобы безопасно удалять врагов
+            enemy_coords = self.canvas.coords(enemy.rect)
+
+            if len(enemy_coords) < 4:
+                continue  # Пропускаем, если объект удалён
+
+            ex1, ey1, ex2, ey2 = enemy_coords
+
+            # Проверяем, пересекаются ли зоны удара и врага
+            if not (ax2 <= ex1 or ax1 >= ex2 or ay2 <= ey1 or ay1 >= ey2):
+                enemy.health -= 50  # Уменьшаем здоровье врага
+                print(f"Враг получил урон! Осталось {enemy.health} HP")
+
+                if enemy.health <= 0:  # Если враг умирает
+                    self.canvas.delete(enemy.rect)  # Удаляем объект с холста
+                    self.current_room.enemies.remove(enemy)  # Убираем из списка врагов
+                    return  # Завершаем проверку после первого попадания
 
     def game_over(self):
         """Вывод сообщения о проигрыше"""
