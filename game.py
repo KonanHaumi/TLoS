@@ -40,19 +40,9 @@ class Game:
         self.load_room(0)
 
         # Создаём стены
-        self.walls = [
-            #Wall(self.canvas, 100, 100, 200, 120),
-            #Wall(self.canvas, 400, 200, 500, 220),
-            #Wall(self.canvas, 250, 400, 350, 420)
-        ]
+        self.walls = []
         # Создаём врагов
-        self.enemies = [
-            #Enemy(self.canvas, 150, 150),
-            #Enemy(self.canvas, 450, 450),
-            #Enemy(self.canvas, 50, 50),
-            #Enemy(self.canvas, 500, 450)
-        ]
-
+        self.enemies = []
         self.bullets = []
 
 
@@ -61,33 +51,36 @@ class Game:
         self.update_movement()  # Запускаем обновление движения
         self.check_bullet_collision()
 
-    def load_room(self, room_id):
-        """Загружает новую комнату"""
-        print(f"Переход в комнату {room_id}")
-        self.int.itemconfig(self.room_text, text=f"Комната: {room_id}")
+    def load_room(self, room_id, entrance_direction=None):
+        """Загружает новую комнату и ставит игрока у соответствующей двери"""
+        print(f"Переход в комнату {room_id} (вход с {entrance_direction})")
 
         # Очищаем холст
         self.canvas.delete("all")
 
-        for enemy in self.current_room.enemies:
-            self.canvas.delete(enemy.rect)
-
-        # Обнуляем список врагов перед созданием новой комнаты
-        self.current_room.enemies.clear()
         # Загружаем новую комнату
         self.current_room = self.rooms[room_id]
         self.current_room.generate_walls()
-        self.current_room.generate_doors()  # Двери создаются снова
+        self.current_room.generate_doors()
         self.current_room.spawn_enemies()
 
-        # Создаём нового игрока в центре комнаты
-        self.player.rect = self.canvas.create_rectangle(290, 290, 310, 310, fill="cyan")
+        # Определяем позицию игрока у входа
+        offset = 100
+        if entrance_direction == "right":
+            player_x, player_y = 600 - offset, 300 # Левая дверь (сдвиг вправо)
+        elif entrance_direction == "left":
+            player_x, player_y = 0 + offset, 300   # Правая дверь (сдвиг влево)
+        elif entrance_direction == "up":
+            player_x, player_y = 300, 0 + offset # Нижняя дверь (сдвиг вверх)
+        elif entrance_direction == "down":
+            player_x, player_y = 300, 600 - offset # Верхняя дверь (сдвиг вниз)
+        else:
+            player_x, player_y = 300, 300  # Если нет направления, появляемся в центре
 
-        # Перерисовываем двери
-        for door in self.current_room.doors:
-            door_coords = self.canvas.coords(door.rect)
-            if len(door_coords) == 4:
-                self.canvas.create_rectangle(*door_coords, fill="brown")
+        # Создаём игрока в нужном месте
+        self.player.rect = self.canvas.create_rectangle(
+            player_x - 10, player_y - 10, player_x + 10, player_y + 10, fill="cyan"
+        )
 
     def key_press(self, event):
         key = event.keysym.lower()
@@ -127,9 +120,14 @@ class Game:
         player_coords = self.canvas.coords(self.player.rect)
 
         for door in self.current_room.doors:
-            target_room = door.check_transition(player_coords)
-            if target_room is not None:
-                self.load_room(target_room)
+            door_coords = self.canvas.coords(door.rect)
+            if not door_coords or len(door_coords) < 4:
+                continue  # Пропускаем некорректные двери
+
+            if (player_coords[2] > door_coords[0] and player_coords[0] < door_coords[2] and
+                    player_coords[3] > door_coords[1] and player_coords[1] < door_coords[3]):
+                self.load_room(door.target_room, door.direction)  # Передаём направление входа
+                return
 
     def check_collision(self, dx, dy):
         """Проверяет, столкнётся ли игрок со стеной или дверью"""

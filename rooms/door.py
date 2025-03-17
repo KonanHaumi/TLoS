@@ -1,14 +1,16 @@
 class Door:
-    def __init__(self, canvas, x1, y1, x2, y2, target_room):
+    def __init__(self, canvas, x1, y1, x2, y2, target_room, direction):
         """
         Дверь, ведущая в другую комнату.
         :param canvas: Холст
         :param x1, y1, x2, y2: Координаты двери
         :param target_room: Номер комнаты, в которую ведёт дверь
+        :param direction: Направление, из которого заходит игрок ("up", "down", "left", "right")
         """
         self.canvas = canvas
-        self.rect = canvas.create_rectangle(x1, y1, x2, y2, fill="brown")
+        self.rect = canvas.create_rectangle(x1, y1, x2, y2, fill="darkorange", outline="black", width=3)
         self.target_room = target_room
+        self.direction = direction  # Добавляем направление
 
     def check_transition(self, player_coords):
         """Проверяет, зашёл ли игрок в дверь"""

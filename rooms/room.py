@@ -23,17 +23,18 @@ class Room:
 
     def generate_doors(self):
         """Создаёт двери, если есть соединение с соседней комнатой"""
-        door_width = 40  # Увеличиваем ширину двери
-        door_height = 40  # Увеличиваем высоту двери
-
         if "up" in self.neighbors and self.neighbors["up"] is not None:
-            self.doors.append(Door(self.canvas, 280, 40, 320, 80, self.neighbors["up"]))  # Верхняя дверь
+            self.doors.append(
+                Door(self.canvas, 280, 40, 320, 80, self.neighbors["up"], "down"))  # Верхняя дверь (вход снизу)
         if "down" in self.neighbors and self.neighbors["down"] is not None:
-            self.doors.append(Door(self.canvas, 280, 520, 320, 560, self.neighbors["down"]))  # Нижняя дверь
+            self.doors.append(
+                Door(self.canvas, 280, 520, 320, 560, self.neighbors["down"], "up"))  # Нижняя дверь (вход сверху)
         if "left" in self.neighbors and self.neighbors["left"] is not None:
-            self.doors.append(Door(self.canvas, 40, 280, 80, 320, self.neighbors["left"]))  # Левая дверь
+            self.doors.append(
+                Door(self.canvas, 40, 280, 80, 320, self.neighbors["left"], "right"))  # Левая дверь (вход справа)
         if "right" in self.neighbors and self.neighbors["right"] is not None:
-            self.doors.append(Door(self.canvas, 520, 280, 560, 320, self.neighbors["right"]))  # Правая дверь
+            self.doors.append(
+                Door(self.canvas, 520, 280, 560, 320, self.neighbors["right"], "left"))  # Правая дверь (вход слева)
 
     def spawn_enemies(self):
         """Создаёт объекты врагов на основе заранее заданных координат"""
