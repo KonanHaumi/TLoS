@@ -30,8 +30,8 @@ class Player:
 
         ATTACK_WIDTH = 20  # Ширина удара
         ATTACK_LENGTH = 40  # Длина удара
-        ATTACK_OFFSET = 10  # Отступ удара от игрока
-        ATTACK_DURATION = 200  # Время, в течение которого удар отображается (мс)
+        ATTACK_OFFSET = 30  # Отступ удара от игрока
+        ATTACK_DURATION = 100  # Время, в течение которого удар отображается (мс)
         ATTACK_DAMAGE = 20  # Урон меча
 
         if direction == "up":
