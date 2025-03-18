@@ -13,7 +13,7 @@ class Room:
         self.enemy_positions = enemies if enemies else []  # Сохраняем позиции врагов
 
     def generate_walls(self):
-        """Создаёт стены по краям (кроме мест для дверей)"""
+        """Создаёт стены по краям"""
         self.walls = [
             Wall(self.canvas, 50, 50, 550, 70),  # Верхняя стена
             Wall(self.canvas, 50, 530, 550, 550),  # Нижняя стена

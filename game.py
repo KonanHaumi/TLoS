@@ -31,10 +31,16 @@ class Game:
         self.room_text = self.int.create_text(300, 50, text=f"Комната: 0", font=("Arial", 14), fill="black")
 
         self.rooms = {
-            0: Room(self.canvas, 0, {"right": 1}),  # В комнате 0 два врага
-            1: Room(self.canvas, 1, {"left": 0, "right": 2, "up": 3}, enemies=[(300, 300)]),  # В комнате 1 один враг
-            2: Room(self.canvas, 2, {"left": 1}, enemies=[(250, 250), (450, 450), (350, 300)]),  # В комнате 2 три врага
-            3: Room(self.canvas, 3, {"down": 1}, enemies=[])  # В комнате 3 нет врагов
+            0: Room(self.canvas, 0, {"right": 1}),
+
+            1: Room(self.canvas, 1, {"left": 0, "right": 2, "up": 3},
+                    enemies=[(300, 300)]),  # В комнате 1 один враг
+
+            2: Room(self.canvas, 2, {"left": 1},
+                    enemies=[(250, 250), (450, 450), (350, 300)]),
+
+            3: Room(self.canvas, 3, {"down": 1},
+                    enemies=[])  # В комнате 3 нет врагов
         }
         self.current_room = self.rooms[0]  # Начальная комната
         self.load_room(0)
@@ -54,6 +60,7 @@ class Game:
     def load_room(self, room_id, entrance_direction=None):
         """Загружает новую комнату и ставит игрока у соответствующей двери"""
         print(f"Переход в комнату {room_id} (вход с {entrance_direction})")
+        self.int.itemconfig(self.room_text, text=f"Комната: {room_id}")
 
         # Очищаем холст
         self.canvas.delete("all")
@@ -63,6 +70,9 @@ class Game:
         self.current_room.generate_walls()
         self.current_room.generate_doors()
         self.current_room.spawn_enemies()
+
+        # Запускаем движение врагов
+        self.update_enemy_movement()
 
         # Определяем позицию игрока у входа
         offset = 100
@@ -182,7 +192,7 @@ class Game:
                     self.game_over()
 
     def check_enemy_collision(self):
-        """Проверка столкновения игрока с врагами"""
+        '"""Проверка столкновения игрока с врагами"""'
         player_coords = self.canvas.coords(self.player.rect)
 
         if not player_coords or len(player_coords) < 4:
@@ -202,6 +212,41 @@ class Game:
 
                 if self.player.health <= 0:
                     self.game_over()
+
+    def update_enemy_movement(self):
+        """Обновляет движение всех врагов, проверяя столкновения"""
+        for enemy in self.current_room.enemies:
+            if self.check_enemy_collision_with_walls(enemy):
+                enemy.change_direction()  # Меняем направление, если враг упёрся в стену
+
+            enemy.move_enemy()  # Двигаем врага
+
+        self.root.after(30, self.update_enemy_movement)  # Запускаем обновление движения
+
+    def check_enemy_collision_with_walls(self, enemy):
+        """Проверяет, столкнулся ли враг со стенами"""
+        enemy_coords = self.canvas.coords(enemy.rect)
+
+        if not enemy_coords or len(enemy_coords) < 4:
+            return False  # Если нет координат, пропускаем проверку
+
+        next_x1, next_y1, next_x2, next_y2 = (
+            enemy_coords[0] + enemy.dx, enemy_coords[1] + enemy.dy,
+            enemy_coords[2] + enemy.dx, enemy_coords[3] + enemy.dy
+        )
+
+        for wall in self.current_room.walls:
+            wall_coords = self.canvas.coords(wall.rect)
+            if not wall_coords or len(wall_coords) < 4:
+                continue  # Пропускаем некорректные стены
+
+            wall_x1, wall_y1, wall_x2, wall_y2 = wall_coords
+
+            if (next_x2 > wall_x1 and next_x1 < wall_x2 and
+                    next_y2 > wall_y1 and next_y1 < wall_y2):
+                return True  # Враг столкнулся со стеной
+
+        return False  # Нет столкновения
 
     def check_attack_collision(self, ax1, ay1, ax2, ay2):
         """Проверяет попадание удара меча в врагов"""

@@ -12,20 +12,13 @@ class Enemy:
         self.shoot()
 
     def move_enemy(self):
-        """Передвижение врага, останавливается при удалении"""
-        if self.rect not in self.canvas.find_all():
-            return  # Если объект удалён, выходим из функции
-
+        """Передвижение врага, вызывается из `Game.update_enemy_movement()`"""
         self.canvas.move(self.rect, self.dx, self.dy)
-        x1, y1, x2, y2 = self.canvas.coords(self.rect)
 
-        # Проверка на границы поля
-        if x1 <= 0 or x2 >= 600:
-            self.dx = -self.dx  # Меняем направление по X
-        if y1 <= 0 or y2 >= 600:
-            self.dy = -self.dy  # Меняем направление по Y
-
-        self.canvas.after(30, self.move_enemy)  # Обновляем через 30 мс
+    def change_direction(self):
+        """Меняет направление врага при столкновении"""
+        self.dx = -self.dx
+        self.dy = -self.dy
 
     def shoot(self):
         """Враг стреляет, если он не удалён"""
