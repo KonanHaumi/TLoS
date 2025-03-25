@@ -30,8 +30,20 @@ class Game:
         self.health_text = self.int.create_text(300, 25, text=f"Здоровье: {self.player.health}", font=("Arial", 14),fill="black")
         self.room_text = self.int.create_text(300, 50, text=f"Комната: 0", font=("Arial", 14), fill="black")
 
-        raw_rooms = generate_rooms(5)  # Получаем словарь с данными
-        self.rooms = {room_id: Room(self.canvas, room_id, data["connections"]) for room_id, data in raw_rooms.items()}
+        raw_rooms = generate_rooms(5, self.canvas)  # Получаем словарь с данными
+        print(raw_rooms)
+        #self.rooms = {room_id: Room(self.canvas, room_id, data.neighbors, enemies=data.enemies) for room_id, data in raw_rooms.items()}
+        self.rooms = {}
+
+        self.rooms = {}
+
+        for room_id, room in raw_rooms.items():
+            self.rooms[room_id] = Room(
+                self.canvas,
+                room_id,
+                neighbors=room.neighbors,
+                enemies=room.enemy_positions
+            )
 
         self.current_room = self.rooms[0]  # Начальная комната
         self.load_room(0)

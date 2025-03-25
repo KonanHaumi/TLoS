@@ -1,46 +1,68 @@
 import random
+from rooms.room import Room  # Импортируем класс Room
 
-def generate_rooms(n):
-    rooms = bfs_generation(n)  # Генерация 10 случайных комнат
+def generate_rooms(number=5, canvas=None):
+    """Генерирует карту с комнатами в правильном формате"""
+    raw_rooms = bfs_generation(number)  # Генерируем структуру комнат
+    generate_enemies(raw_rooms)  # Добавляем случайных врагов
+
+    # Преобразуем в объект Room с нужным форматом
+    rooms = {
+        room_id: Room(canvas, room_id, data["neighbors"], enemies=data["enemies"])
+        for room_id, data in raw_rooms.items()
+    }
+
     print_structure(rooms)
     return rooms
 
 
 def print_structure(rooms):
-    """Вывод структуры в консоль"""
-    for room_id, data in rooms.items():
-        print(f"Комната {room_id}, соединения: {data['connections']}")
+    """Вывод структуры комнат в консоль"""
+    for room_id, room in rooms.items():
+        print(f"Комната {room_id}, соединения: {room.neighbors}, враги: {room.enemy_positions}")
 
 
 def bfs_generation(number):
-    """Генерирует случайную карту комнат с BFS (обход в ширину)"""
-    rooms = {0: {"connections": {}}}
+    """Генерирует случайные комнаты, создавая связи"""
+    rooms = {
+        0: {"neighbors": {}, "enemies": []}  # Стартовая комната без врагов
+    }
     queue = [0]
     room_id = 1
     directions = ["right", "left", "up", "down"]
 
     while queue and room_id < number:
         current = queue.pop(0)
-        random.shuffle(directions)  # Перемешиваем направления
+        random.shuffle(directions)
 
-        connections_added = 0  # Ограничиваем количество дверей в комнату
+        connections_added = 0
         for direction in directions:
-            if room_id >= number or connections_added >= 2:  # Ограничиваем 2 связи на комнату
+            if room_id >= number or connections_added >= 2:  # Ограничиваем связи
                 break
 
-            # Проверяем, нет ли уже комнаты в этом направлении
-            if direction in rooms[current]["connections"]:
+            if direction in rooms[current]["neighbors"]:
                 continue
 
-            # Создаём новую комнату и связываем её
-            rooms[current]["connections"][direction] = room_id
-            rooms[room_id] = {"connections": {opposite_direction(direction): current}}
+            # Создаём новую комнату с пустыми врагами
+            rooms[current]["neighbors"][direction] = room_id
+            rooms[room_id] = {"neighbors": {opposite_direction(direction): current}, "enemies": []}
             queue.append(room_id)
 
             room_id += 1
-            connections_added += 1  # Учитываем добавленную связь
+            connections_added += 1
 
     return rooms
+
+def generate_enemies(rooms):
+    """Добавляет случайных врагов в комнаты"""
+    for room_id, data in rooms.items():
+        if room_id == 0:  # В начальной комнате врагов нет
+            continue
+
+        num_enemies = random.randint(1, 4)  # Количество врагов (1-4)
+        enemy_positions = [(random.randint(80, 500), random.randint(80, 500)) for _ in range(num_enemies)]
+
+        data["enemies"] = enemy_positions  # Сохраняем врагов в нужном формате
 
 
 def opposite_direction(direction):
