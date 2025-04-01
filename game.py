@@ -31,12 +31,8 @@ class Game:
         self.room_text = self.int.create_text(300, 50, text=f"Комната: 0", font=("Arial", 14), fill="black")
 
         raw_rooms = generate_rooms(5, self.canvas)  # Получаем словарь с данными
-        print(raw_rooms)
-        #self.rooms = {room_id: Room(self.canvas, room_id, data.neighbors, enemies=data.enemies) for room_id, data in raw_rooms.items()}
-        self.rooms = {}
 
         self.rooms = {}
-
         for room_id, room in raw_rooms.items():
             self.rooms[room_id] = Room(
                 self.canvas,
@@ -120,6 +116,7 @@ class Game:
         check_enemy_collision(self)  # Проверяем столкновение с врагами
         check_bullet_collision(self, Bullet)  # Проверяем попадание пули
         self.check_room_transition()  # Проверяем, вошёл ли игрок в дверь
+        self.check_room_clear()  # Проверяем, уничтожены ли все враги
 
         self.root.after(16, self.update_movement)
 
@@ -138,8 +135,15 @@ class Game:
             if not door_coords or len(door_coords) < 4:
                 continue  # Пропускаем некорректные двери
 
+            # Проверка пересечения игрока и двери
             if (player_coords[2] > door_coords[0] and player_coords[0] < door_coords[2] and
                     player_coords[3] > door_coords[1] and player_coords[1] < door_coords[3]):
+
+                if door.locked:
+                    print("Дверь закрыта! Победите всех врагов, чтобы выйти.")
+                    return  # Выход заблокирован
+
+                print(f"Игрок входит в комнату {door.target_room} через дверь {door.direction}")
                 self.load_room(door.target_room, door.direction)  # Передаём направление входа
                 return
 
@@ -153,6 +157,15 @@ class Game:
 
         self.root.after(30, self.update_enemy_movement)  # Запускаем обновление движения
 
+    def check_room_clear(self):
+        """Проверяет, уничтожены ли все враги в текущей комнате, и открывает двери"""
+        if self.current_room.enemies:
+            return
+        for door in self.current_room.doors:
+            if door.locked:
+                door.locked = False
+                door.update_color()
+                print("Двери разблокированы!")
 
     def game_over(self):
         """Вывод сообщения о проигрыше"""
