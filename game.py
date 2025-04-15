@@ -30,7 +30,7 @@ class Game:
         self.health_text = self.int.create_text(300, 25, text=f"Здоровье: {self.player.health}", font=("Arial", 14),fill="black")
         self.room_text = self.int.create_text(300, 50, text=f"Комната: 0", font=("Arial", 14), fill="black")
 
-        raw_rooms = generate_rooms(5, self.canvas)  # Получаем словарь с данными
+        raw_rooms = generate_rooms(10, self.canvas)  # Получаем словарь с данными
 
         self.rooms = {}
         for room_id, room in raw_rooms.items():

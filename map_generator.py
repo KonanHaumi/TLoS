@@ -11,10 +11,35 @@ def generate_rooms(number=5, canvas=None):
         room_id: Room(canvas, room_id, data["neighbors"], enemies=data["enemies"])
         for room_id, data in raw_rooms.items()
     }
-
     print_structure(rooms)
+
+    find_farthest_rooms(raw_rooms)
     return rooms
 
+def find_farthest_rooms(rooms):
+    """Находит комнаты, находящиеся дальше всего от комнаты 0"""
+    visited = set()
+    distance = {0: 0}
+    queue = [0]
+
+    while queue:
+        current = queue.pop(0)
+        visited.add(current)
+
+        for neighbor in rooms[current]["neighbors"].values():
+            if neighbor not in visited and neighbor not in queue:
+                distance[neighbor] = distance[current] + 1
+                queue.append(neighbor)
+
+    if not distance:
+        print("Нет доступных комнат.")
+        return
+
+    max_dist = max(distance.values())
+    farthest = [room_id for room_id, dist in distance.items() if dist == max_dist]
+
+    print(f"Самые дальние комнаты от 0 (расстояние {max_dist}): {farthest}")
+    return farthest
 
 def print_structure(rooms):
     """Вывод структуры комнат в консоль"""
